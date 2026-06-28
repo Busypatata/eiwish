@@ -1,0 +1,170 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* === EiWish design tokens === */
+  /* Warm ivory paper background; near-black ink; coral-rose "wish" accent;
+     deep pine "given/shared" accent; soft tan for dividers and tag string. */
+  --background: #fbf4ed;
+  --foreground: #1f1a17;
+
+  --card: #ffffff;
+  --card-foreground: #1f1a17;
+
+  --popover: #ffffff;
+  --popover-foreground: #1f1a17;
+
+  --primary: #e0623f;
+  --primary-foreground: #fff8f4;
+
+  --secondary: #2f6f62;
+  --secondary-foreground: #f3faf7;
+
+  --muted: #f1e8dd;
+  --muted-foreground: #6b5f54;
+
+  --accent: #f4ddc9;
+  --accent-foreground: #1f1a17;
+
+  --destructive: #b3261e;
+  --destructive-foreground: #fff8f4;
+
+  --border: #e3d6c4;
+  --input: #e3d6c4;
+  --ring: #e0623f;
+
+  --radius: 0.85rem;
+
+  --chart-1: #e0623f;
+  --chart-2: #2f6f62;
+  --chart-3: #c9a26a;
+  --chart-4: #8c5b8f;
+  --chart-5: #4a7fa6;
+}
+
+.dark {
+  --background: #1a1512;
+  --foreground: #f3e9dd;
+
+  --card: #221b17;
+  --card-foreground: #f3e9dd;
+
+  --popover: #221b17;
+  --popover-foreground: #f3e9dd;
+
+  --primary: #e8754f;
+  --primary-foreground: #1a1512;
+
+  --secondary: #3f8a78;
+  --secondary-foreground: #0f1714;
+
+  --muted: #2b231e;
+  --muted-foreground: #b9a999;
+
+  --accent: #34281f;
+  --accent-foreground: #f3e9dd;
+
+  --destructive: #e0564a;
+  --destructive-foreground: #1a1512;
+
+  --border: #3a2f28;
+  --input: #3a2f28;
+  --ring: #e8754f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 0.35rem);
+  --radius-md: calc(var(--radius) - 0.15rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.4rem);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), serif;
+  }
+  .font-body {
+    font-family: var(--font-body), sans-serif;
+  }
+
+  /* Signature element: gift-tag notch on wish cards — a small punched
+     circle in the top-left corner, like a real tag on a string. */
+  .tag-notch {
+    position: relative;
+  }
+  .tag-notch::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--background);
+    border: 1.5px solid var(--border);
+    z-index: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
