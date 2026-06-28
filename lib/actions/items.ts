@@ -40,7 +40,7 @@ export async function addWishlistItem(
 ): Promise<ActionResult> {
   const ctx = await requireUser();
   if (!ctx) return { error: "You need to be signed in." };
-  const { supabase } = ctx;
+  const { supabase, user } = ctx;
 
   const parsed = wishlistItemSchema.safeParse({
     title: formData.get("title"),
@@ -68,6 +68,9 @@ export async function addWishlistItem(
     currency: parsed.data.currency,
     priority: parsed.data.priority,
     image_url: sanitizeImageUrl(formData.get("imageUrl")),
+    added_by: user.id,
+  });
+  });
   });
 
   if (error) {

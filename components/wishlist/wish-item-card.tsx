@@ -35,12 +35,14 @@ export function WishItemCard({
   canEdit,
   canMarkPurchased,
   onEdit,
+  addedByName,
 }: {
   item: WishlistItem;
   wishlistId: string;
   canEdit: boolean;
   canMarkPurchased: boolean;
   onEdit: () => void;
+  addedByName?: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -167,6 +169,12 @@ export function WishItemCard({
             </Badge>
           )}
         </div>
+        
+        {addedByName && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Added by {addedByName}
+          </p>
+        )}
 
         {item.product_url && (
           <a

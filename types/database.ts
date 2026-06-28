@@ -133,6 +133,7 @@ export interface Database {
           purchased_by: string | null;
           purchased_at: string | null;
           sort_order: number;
+          added_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -150,6 +151,7 @@ export interface Database {
           purchased_by?: string | null;
           purchased_at?: string | null;
           sort_order?: number;
+          added_by?: string | null;
         };
         Update: {
           title?: string;
@@ -162,11 +164,12 @@ export interface Database {
           is_purchased?: boolean;
           purchased_by?: string | null;
           purchased_at?: string | null;
-          sort_order?: number;
+         sort_order?: number;
+          added_by?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: "wishlist_items_wishlist_id_fkey";
+            foreignKeyName: "wishlist_items_wishlist_id_fkey"
             columns: ["wishlist_id"];
             isOneToOne: false;
             referencedRelation: "wishlists";

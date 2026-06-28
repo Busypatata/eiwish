@@ -14,7 +14,7 @@ export function ItemsGrid({
   canEdit,
   canMarkPurchased,
 }: {
-  items: WishlistItem[];
+  items: (WishlistItem & { adderName?: string | null })[];
   wishlistId: string;
   userId: string;
   canEdit: boolean;
@@ -55,6 +55,7 @@ export function ItemsGrid({
               wishlistId={wishlistId}
               canEdit={canEdit}
               canMarkPurchased={canMarkPurchased}
+             addedByName={item.adderName}
               onEdit={() => openEditDialog(item)}
             />
           ))}

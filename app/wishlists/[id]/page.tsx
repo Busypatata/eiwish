@@ -54,9 +54,9 @@ export default async function WishlistPage({
   const canEdit = isOwner || collaboratorRole === "editor";
   const canMarkPurchased = isOwner || collaboratorRole !== null;
 
-  const { data: items } = await supabase
+ const { data: items } = await supabase
     .from("wishlist_items")
-    .select("*")
+    .select("*, adder:profiles!added_by(display_name, username)")
     .eq("wishlist_id", wishlist.id)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
@@ -135,7 +135,12 @@ export default async function WishlistPage({
 
         <div className="mt-10">
           <ItemsGrid
-            items={items ?? []}
+            items={(items ?? []).map((item) => ({
+              ...item,
+              adderName: Array.isArray(item.adder)
+                ? (item.adder[0]?.display_name || item.adder[0]?.username)
+                : ((item.adder as any)?.display_name || (item.adder as any)?.username),
+            }))}
             wishlistId={wishlist.id}
             userId={user?.id ?? ""}
             canEdit={canEdit}
