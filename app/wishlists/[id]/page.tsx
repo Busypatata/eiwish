@@ -70,13 +70,13 @@ export default async function WishlistPage({
   if (isOwner && wishlist.visibility === "shared") {
     const { data } = await supabase
       .from("wishlist_collaborators")
-      .select("id, role, profile:profiles(username, display_name, avatar_url)")
+      .select("id, role, profiles(username, display_name, avatar_url)")
       .eq("wishlist_id", wishlist.id);
 
     collaborators = (data ?? []).map((c) => ({
       id: c.id,
       role: c.role,
-      profile: Array.isArray(c.profile) ? c.profile[0] : c.profile,
+      profile: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
     }));
   }
 
