@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site/site-header";
 import { WishlistCard } from "@/components/wishlist/wishlist-card";
 import { NewWishlistDialog } from "@/components/wishlist/new-wishlist-dialog";
-import { Gift } from "lucide-react";
+import { Gift, Users } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -13,14 +13,20 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  // RLS "owners can view own wishlists" scopes this to the current user
-  // regardless of the lack of an explicit .eq filter, but we add one
-  // anyway for clarity and to avoid relying solely on RLS in app logic.
   const { data: wishlists } = await supabase
     .from("wishlists")
     .select("id, title, description, visibility, wishlist_items(count)")
     .eq("owner_id", user.id)
     .order("created_at", { ascending: false });
+
+  const { data: sharedRaw } = await supabase
+    .from("wishlist_collaborators")
+    .select("wishlist:wishlists(id, title, description, visibility, wishlist_items(count))")
+    .eq("user_id", user.id);
+
+  const sharedWishlists = (sharedRaw ?? [])
+    .map((c) => (Array.isArray(c.wishlist) ? c.wishlist[0] : c.wishlist))
+    .filter(Boolean);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -58,6 +64,29 @@ export default async function DashboardPage() {
               Create your first wishlist to start collecting the things
               you&apos;re hoping for.
             </p>
+          </div>
+        )}
+
+        {sharedWishlists.length > 0 && (
+          <div className="mt-14">
+            <div className="flex items-center gap-2">
+              <Users className="size-5 text-secondary" />
+              <h2 className="font-display text-2xl font-medium tracking-tight">
+                Shared with me
+              </h2>
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {sharedWishlists.map((w) => (
+                <WishlistCard
+                  key={w.id}
+                  id={w.id}
+                  title={w.title}
+                  description={w.description}
+                  visibility={w.visibility}
+                  itemCount={w.wishlist_items?.[0]?.count ?? 0}
+                />
+              ))}
+            </div>
           </div>
         )}
       </main>
