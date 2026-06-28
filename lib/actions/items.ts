@@ -14,14 +14,6 @@ async function requireUser() {
   return { supabase, user };
 }
 
-/**
- * The image URL comes from a prior, already-authorized Supabase Storage
- * upload (see lib/uploads.ts), which itself only writes to the calling
- * user's own folder per the storage RLS policies. Here we just validate
- * shape (must be a real https URL pointing at our own Supabase Storage
- * origin) so a tampered form field can't smuggle in something like a
- * javascript: URL or an arbitrary external image.
- */
 function sanitizeImageUrl(value: FormDataEntryValue | null): string | null {
   if (typeof value !== "string" || !value) return null;
   try {
@@ -55,10 +47,6 @@ export async function addWishlistItem(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  // RLS "owners and editors can add items" enforces that wishlistId
-  // actually belongs to (or is editable by) the current user — an
-  // arbitrary/foreign wishlistId here simply gets rejected by the
-  // database, not by this application code.
   const { error } = await supabase.from("wishlist_items").insert({
     wishlist_id: wishlistId,
     title: parsed.data.title,
@@ -70,11 +58,9 @@ export async function addWishlistItem(
     image_url: sanitizeImageUrl(formData.get("imageUrl")),
     added_by: user.id,
   });
-  });
-  });
 
   if (error) {
-    return { error: "Couldn't add that wish. Please try again." };
+    return { error: error.message ?? "Couldn't add that wish. Please try again." };
   }
 
   revalidatePath(`/wishlists/${wishlistId}`);
@@ -147,14 +133,6 @@ export async function deleteWishlistItem(
   return { success: true };
 }
 
-/**
- * Marking an item purchased is a deliberately narrow action, separate from
- * the general updateWishlistItem above. It only ever writes
- * is_purchased/purchased_by/purchased_at, never title/price/etc, so a
- * viewer-only collaborator (who is allowed to mark gifts as bought, per
- * the "collaborators can mark items purchased" RLS policy) can never use
- * this code path to silently edit other fields.
- */
 export async function toggleItemPurchased(
   wishlistId: string,
   itemId: string,
