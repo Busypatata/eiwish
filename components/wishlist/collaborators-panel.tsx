@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition, useState } from "react";
 import { toast } from "sonner";
 import { UserPlus, X } from "lucide-react";
 import { inviteCollaborator, removeCollaborator } from "@/lib/actions/collaborators";
@@ -25,9 +25,11 @@ type Collaborator = {
 export function CollaboratorsPanel({
   wishlistId,
   collaborators,
+  onCollaboratorsChange,
 }: {
   wishlistId: string;
   collaborators: Collaborator[];
+  onCollaboratorsChange?: (c: Collaborator[]) => void;
 }) {
   const [role, setRole] = useState("viewer");
   const [isPending, startTransition] = useTransition();
@@ -40,13 +42,32 @@ export function CollaboratorsPanel({
     } else {
       toast.success("Invited!");
       (document.getElementById("invite-username") as HTMLInputElement).value = "";
+      // Refresh collaborators list
+      fetch(`/api/wishlists/${wishlistId}/collaborators`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data) && onCollaboratorsChange) {
+            onCollaboratorsChange(data);
+          }
+        });
     }
   }
 
   function handleRemove(collaboratorId: string) {
     startTransition(async () => {
       const result = await removeCollaborator(wishlistId, collaboratorId);
-      if (result && "error" in result) toast.error(result.error);
+      if (result && "error" in result) {
+        toast.error(result.error);
+      } else {
+        // Refresh collaborators list
+        fetch(`/api/wishlists/${wishlistId}/collaborators`)
+          .then((r) => r.json())
+          .then((data) => {
+            if (Array.isArray(data) && onCollaboratorsChange) {
+              onCollaboratorsChange(data);
+            }
+          });
+      }
     });
   }
 
@@ -83,20 +104,19 @@ export function CollaboratorsPanel({
             >
               <div className="flex items-center gap-2.5">
                 <Avatar className="size-8">
-                  {c.profile.avatar_url && (
+                  {c.profile?.avatar_url && (
                     <AvatarImage src={c.profile.avatar_url} />
                   )}
                   <AvatarFallback>
-                    {c.profile.display_name.charAt(0).toUpperCase() ||
-                      c.profile.username.charAt(0).toUpperCase()}
+                    {(c.profile?.display_name || c.profile?.username || "?").charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-sm font-medium">
-                    {c.profile.display_name || c.profile.username}
+                    {c.profile?.display_name || c.profile?.username}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    @{c.profile.username}
+                    @{c.profile?.username}
                   </p>
                 </div>
               </div>

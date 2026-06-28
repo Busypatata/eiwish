@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Settings, Trash2 } from "lucide-react";
 import { updateWishlist, deleteWishlist } from "@/lib/actions/wishlists";
@@ -52,13 +52,26 @@ type Collaborator = {
 
 export function WishlistSettingsDialog({
   wishlist,
-  collaborators,
+  collaborators: initialCollaborators,
 }: {
   wishlist: Wishlist;
   collaborators: Collaborator[];
 }) {
   const [open, setOpen] = useState(false);
   const [visibility, setVisibility] = useState(wishlist.visibility);
+  const [collaborators, setCollaborators] = useState(initialCollaborators);
+
+  // Refresh collaborators from server when dialog opens
+  useEffect(() => {
+    if (open && wishlist.visibility === "shared") {
+      fetch(`/api/wishlists/${wishlist.id}/collaborators`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setCollaborators(data);
+        })
+        .catch(() => {});
+    }
+  }, [open, wishlist.id, wishlist.visibility]);
 
   async function handleSubmit(formData: FormData) {
     const result = await updateWishlist(wishlist.id, formData);
@@ -92,35 +105,19 @@ export function WishlistSettingsDialog({
 
         <Tabs defaultValue="details">
           <TabsList className="w-full">
-            <TabsTrigger value="details" className="flex-1">
-              Details
-            </TabsTrigger>
-            <TabsTrigger value="sharing" className="flex-1">
-              Sharing
-            </TabsTrigger>
+            <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
+            <TabsTrigger value="sharing" className="flex-1">Sharing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
             <form action={handleSubmit} className="space-y-4 pt-2">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-title">Title</Label>
-                <Input
-                  id="edit-title"
-                  name="title"
-                  defaultValue={wishlist.title}
-                  required
-                  maxLength={120}
-                />
+                <Input id="edit-title" name="title" defaultValue={wishlist.title} required maxLength={120} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  name="description"
-                  defaultValue={wishlist.description}
-                  maxLength={2000}
-                  rows={3}
-                />
+                <Textarea id="edit-description" name="description" defaultValue={wishlist.description} maxLength={2000} rows={3} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-visibility">Who can see this?</Label>
@@ -131,16 +128,11 @@ export function WishlistSettingsDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="private">Private — only me</SelectItem>
-                    <SelectItem value="shared">
-                      Shared — people I invite
-                    </SelectItem>
-                    <SelectItem value="public">
-                      Public — anyone with the link
-                    </SelectItem>
+                    <SelectItem value="shared">Shared — people I invite</SelectItem>
+                    <SelectItem value="public">Public — anyone with the link</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -152,17 +144,12 @@ export function WishlistSettingsDialog({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this wishlist?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete &quot;{wishlist.title}
-                        &quot; and every wish in it. This can&apos;t be
-                        undone.
+                        This will permanently delete &quot;{wishlist.title}&quot; and every wish in it. This can&apos;t be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDelete}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete forever
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -179,11 +166,11 @@ export function WishlistSettingsDialog({
                 <CollaboratorsPanel
                   wishlistId={wishlist.id}
                   collaborators={collaborators}
+                  onCollaboratorsChange={setCollaborators}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Set visibility to &quot;Shared&quot; on the Details tab to
-                  invite specific people.
+                  Set visibility to &quot;Shared&quot; on the Details tab to invite specific people.
                 </p>
               )}
             </div>
